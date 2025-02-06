@@ -1,0 +1,14 @@
+# editors
+*.swp
+*~
+.DS_Store
+
+# python
+.venv
+
+# build
+/build*
+/twister-out*
+
+__pycache__/
+
