@@ -58,7 +58,7 @@ static user_timer_t s_user_timers[TIMERS_COUNT];
 * Local function definitions.
 ***************************************************************************************************/
 
-/*
+/**
  * @brief This function is the ISR of the system timer module.
 */
 static void timer_isr()
@@ -77,11 +77,6 @@ static void timer_isr()
 * External function definitions.
 ***************************************************************************************************/
 
-/*
- * @brief This function is the main function of the timer module. 
- * It is responsible for checking the user timers and firing the callback functions.
- * It should be called in the main loop.
-*/
 void sys_timer_main()
 {
     /* Check if the semaphore is taken */
@@ -99,7 +94,7 @@ void sys_timer_main()
                     s_user_timers[i].timer_counter
                 )
                 {
-                    logger_d_p1(__func__, "User timer %d is fired\n", i);
+                    logger_d_p1("User timer %d is fired\n", i);
                     /* If the timer is one shot, deactivate it */
                     if(s_user_timers[i].one_shot == true)
                     {
@@ -118,16 +113,12 @@ void sys_timer_main()
     }
 }
 
-/*
- * @brief This function initializes the system timer module.
- * It should be called before allocating any user timers.
-*/
 void sys_timer_init()
 {
     /* Check if the main timer is not initialized */
     if(s_main_timer.is_active == false)
     {
-        logger_d(__func__, "System timer is initializing...\n");
+        logger_d("System timer is initializing...\n");
         /* Initialize the user timers */
         for(uint8_t i = 0; i < TIMERS_COUNT; i++)
         {
@@ -144,33 +135,24 @@ void sys_timer_init()
         /* initialize the main timer and set the timer prescaler equal
          * to (SYSTEM_CPU_FREQ_MHZ)
          */
-        s_main_timer.timer_hnd_ptr = timerBegin(0, (SYSTEM_CPU_FREQ_MHZ), true);
+        s_main_timer.timer_hnd_ptr = timerBegin(0, get_sys_cpu_freq_mhz(), true);
         timerAttachInterrupt(s_main_timer.timer_hnd_ptr, &timer_isr, true);
         /* Set the timer period according to the following formula: 
          * timer_period = (100000) to convert the period to 100ms x
          *                      target time in milli seconds x (cpu frequency / prescaler)
          */
-        timerAlarmWrite(s_main_timer.timer_hnd_ptr, (500UL * s_main_timer.timer_period * s_main_timer.time_unit), true);
+        timerAlarmWrite(s_main_timer.timer_hnd_ptr, (1000UL * s_main_timer.timer_period * s_main_timer.time_unit), true);
         s_main_timer.is_active = true;
         timerAlarmEnable(s_main_timer.timer_hnd_ptr);
 
-        logger_d(__func__, "System timer is initialized...\n");
+        logger_d("System timer is initialized...\n");
     }
     else
     {
-        logger_d(__func__, "System timer is already initialized\n");
+        logger_d("System timer is already initialized\n");
     }
 }
 
-/*
- * @brief This function allocates a user timer, the minimum time period is 100ms.
- * @param p_time_period input: The period of the timer in the selected time unit.
- * @param p_time_unit   input: The time unit of the timer.
- * @param p_timer_cb    input: The callback function of the timer.
- * @param p_one_shot    input: The one shot flag of the timer, if true the timer will be run only once.
- * @return The ID of the allocated timer;
- *         NO_TIMER if no timer is available.
-*/
 timer_handler_t * timer_allocate(uint32_t p_time_period,
                           time_unit_t p_time_unit,
                           timer_callback_t p_timer_cb,
@@ -187,30 +169,21 @@ timer_handler_t * timer_allocate(uint32_t p_time_period,
             s_user_timers[i].one_shot = p_one_shot;
             s_user_timers[i].user_timer_hnd.timer_id = i;
             user_timer = &(s_user_timers[i].user_timer_hnd);
-            logger_d_p1(__func__, "User timer %d is allocated\n", i);
+            logger_d_p1("User timer %d is allocated\n", i);
             break;
         }
     }
     return user_timer;
 }
 
-/*
- * @brief This function starts the user timer.
- * @param p_timer_id input: The ID of the timer.
-*/
 void timer_activate(timer_id_t p_timer_id)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
-        s_user_timers[p_timer_id].timer_counter = 0;
         s_user_timers[p_timer_id].is_active = true;
     }
 }
 
-/*
- * @brief This function stops the user timer.
- * @param p_timer_id input: The ID of the timer.
-*/
 void timer_deactivate(timer_id_t p_timer_id)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
@@ -221,17 +194,12 @@ void timer_deactivate(timer_id_t p_timer_id)
     }
 }
 
-/*
- * @brief This function sets the period of the user timer.
- * @param p_timer_id    input: The ID of the timer.
- * @param p_time_period input: The period of the timer in the selected time unit.
- * @param p_time_unit   input: The time unit of the timer.
-*/
 void timer_update_period(timer_id_t p_timer_id ,uint32_t p_time_period, time_unit_t p_time_unit)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
         s_user_timers[p_timer_id].timer_counter = 0;
+        s_user_timers[p_timer_id].user_timer_hnd.timer_flag = false;
         s_user_timers[p_timer_id].timer_period = p_time_period;
         s_user_timers[p_timer_id].time_unit = p_time_unit;
     }
@@ -243,13 +211,19 @@ void timer_update_oneshot(timer_id_t p_timer_id, bool p_one_shot)
     {
         s_user_timers[p_timer_id].one_shot = p_one_shot;
         s_user_timers[p_timer_id].timer_counter = 0;
+        s_user_timers[p_timer_id].user_timer_hnd.timer_flag = false;
     }
 }
 
-/*
- * @brief This function deletes the user timer.
- * @param p_timer_id input: The ID of the timer.
-*/
+void timer_reset(timer_id_t p_timer_id)
+{
+    if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
+    {
+        s_user_timers[p_timer_id].timer_counter = 0;
+        s_user_timers[p_timer_id].user_timer_hnd.timer_flag = false;
+    }
+}
+
 void timer_clear(timer_id_t p_timer_id)
 {
     if(p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
