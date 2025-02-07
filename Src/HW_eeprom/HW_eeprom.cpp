@@ -102,11 +102,7 @@ static uint16_t read_checksum(void)
 * External function definitions.
 ***************************************************************************************************/
 
-/*
- * @brief
- * @param p_data_size
-*/
-bool eeprom_init(uint32_t p_data_size)
+bool ardal_eeprom_init(uint32_t p_data_size)
 {
     bool ret_val = false;
     if (false == is_eeprom_init)
@@ -126,7 +122,7 @@ bool eeprom_init(uint32_t p_data_size)
     return ret_val;
 }
 
-void eeprom_deinit(void)
+void ardal_eeprom_deinit(void)
 {
     EEPROM.end();
     is_eeprom_init = false;
@@ -134,7 +130,7 @@ void eeprom_deinit(void)
     g_allocated_data_size = 0U;
 }
 
-data_validity_t eeprom_read_data(uint8_t * p_ptr_data_buffer, 
+data_validity_t ardal_eeprom_read_data(uint8_t * p_ptr_data_buffer, 
                                  uint32_t p_data_size,
                                  uint32_t p_starting_address)
 {
@@ -175,7 +171,7 @@ data_validity_t eeprom_read_data(uint8_t * p_ptr_data_buffer,
     return data_vld;
 }
 
-bool eeprom_write_data(uint8_t * p_ptr_data_buffer, 
+bool ardal_eeprom_write_data(uint8_t * p_ptr_data_buffer, 
                                   uint32_t p_data_size,
                                   uint32_t p_starting_address)
 {
