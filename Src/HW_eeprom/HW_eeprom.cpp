@@ -4,7 +4,6 @@
 * Abstract: Implementation of "/lib/HW_eeprom/HW_eeprom.h" module.
 * Author: Naim ALMASRI
 * Date: 15.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 /***************************************************************************************************
@@ -123,6 +122,7 @@ void eeprom_deinit(void)
 {
     EEPROM.end();
 }
+
 data_validity_t eeprom_read_data(uint8_t * p_ptr_data_buffer, 
                                  uint32_t p_data_size,
                                  uint32_t p_starting_address)

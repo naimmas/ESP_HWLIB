@@ -4,7 +4,6 @@
 * Abstract: Definition of common system configs.
 * Author: Naim ALMASRI
 * Date: 10.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 #ifndef HW_COMM_H

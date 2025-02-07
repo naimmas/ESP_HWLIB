@@ -4,7 +4,6 @@
 * Abstract: Interface definition for "/lib/string_util/string_util.c" module.
 * Author: Naim ALMASRI
 * Date: 15.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 #ifndef STRING_UTIL_H

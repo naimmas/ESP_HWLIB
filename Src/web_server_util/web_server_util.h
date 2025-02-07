@@ -4,7 +4,6 @@
 * Abstract: Interface definition for "/lib/web_server_util/web_server_util.c" module.
 * Author: Naim ALMASRI
 * Date: 23.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 #ifndef WEB_SERVER_UTIL_H

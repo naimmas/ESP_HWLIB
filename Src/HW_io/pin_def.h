@@ -4,7 +4,6 @@
 * Abstract: Definition of system pins.
 * Author: Naim ALMASRI
 * Date: 02.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 #ifndef PIN_DEF_H

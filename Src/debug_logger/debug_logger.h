@@ -4,7 +4,6 @@
 * Abstract: Interface definition for "/lib/debug_logger/debug_logger.c" module.
 * Author: Naim ALMASRI
 * Date: 13.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 #ifndef DEBUG_LOGGER_H

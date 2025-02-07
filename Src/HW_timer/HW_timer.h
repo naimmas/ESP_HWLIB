@@ -4,7 +4,6 @@
 * Abstract: Interface definition for "lib/HW_timer/HW_timer.c" module.
 * Author: Naim ALMASRI
 * Date: 10.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 #ifndef HW_TIMER_H

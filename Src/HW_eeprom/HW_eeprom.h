@@ -4,7 +4,6 @@
 * Abstract: Interface definition for "/lib/HW_eeprom/HW_eeprom.c" module.
 * Author: Naim ALMASRI
 * Date: 15.06.2024
-* Revision: 1.0
 ***************************************************************************************************/
 
 #ifndef HW_EEPROM_H
