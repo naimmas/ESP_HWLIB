@@ -9,6 +9,7 @@
 # build
 /build*
 /twister-out*
+.priv_*
 
 __pycache__/
 
