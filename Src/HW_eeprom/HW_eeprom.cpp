@@ -144,33 +144,33 @@ data_validity_t eeprom_read_data(uint8_t * p_ptr_data_buffer,
         0U != p_data_size && p_data_size <= g_allocated_data_size &&
         p_starting_address >= DATA_START_ADRS)
     {
-        logger_d(__func__, "EEPROM read data\n");
+        logger_d("EEPROM read data\n");
         if(true == is_magic_number_valid())
         {
-            logger_d(__func__, "Magic number is valid\n");
+            logger_d("Magic number is valid\n");
             EEPROM.readBytes(p_starting_address, buffer_ptr, p_data_size);
             uint16_t checksum = calculate_checksum((const uint8_t*)buffer_ptr, p_data_size);
             uint16_t r_checksum = read_checksum();
             if(checksum == r_checksum)
             {
-                logger_d(__func__, "Checksum is valid\n");
+                logger_d("Checksum is valid\n");
                 memcpy(p_ptr_data_buffer, (const uint8_t*)buffer_ptr, p_data_size);
                 data_vld = DATA_VALID;
             }
             else
             {
-                logger_d(__func__, "Checksum is invalid\n");
+                logger_d("Checksum is invalid\n");
             }
         }
         else
         {
             
-            logger_d(__func__, "Magic number is invalid\tNo data to read\n");
+            logger_d("Magic number is invalid\tNo data to read\n");
         }
     }
     else
     {
-        logger_d(__func__, "Invalid input parameters\n");
+        logger_d("Invalid input parameters\n");
     }
     return data_vld;
 }
@@ -189,16 +189,16 @@ bool eeprom_write_data(uint8_t * p_ptr_data_buffer,
     {
         if(false == is_magic_number_valid())
         {
-            logger_d(__func__, "No magic number\n");
+            logger_d("No magic number\n");
             write_status = write_magic_number();
         }
         else
         {
-            logger_d(__func__, "Magic number is exist\n");
+            logger_d("Magic number is exist\n");
         }
         if(true == write_status)
         {
-            logger_d(__func__, "Magic number is written\n");
+            logger_d("Magic number is written\n");
             checksum = calculate_checksum(p_ptr_data_buffer, p_data_size);
             write_status = write_checksum(checksum);
             if(true == write_status)
@@ -206,7 +206,7 @@ bool eeprom_write_data(uint8_t * p_ptr_data_buffer,
                 r_checksum = read_checksum();
                 if(r_checksum == checksum)
                 {
-                    logger_d(__func__, "Checksum is written\n");
+                    logger_d("Checksum is written\n");
                     EEPROM.writeBytes(p_starting_address, p_ptr_data_buffer, p_data_size);
                     data_vld = EEPROM.commit();
                 }
@@ -219,7 +219,7 @@ bool eeprom_write_data(uint8_t * p_ptr_data_buffer,
     }
     else
     {
-        logger_d(__func__, "Invalid input parameters\n");
+        logger_d("Invalid input parameters\n");
     }
 
     return data_vld;
