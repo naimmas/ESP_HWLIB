@@ -29,7 +29,8 @@
 /***************************************************************************************************
 * Local type definitions.
 ***************************************************************************************************/
-
+uint16_t g_magic_number = 0x00U;
+uint32_t g_allocated_data_size = 0U;
 /***************************************************************************************************
  * Local data definitions.
 ***************************************************************************************************/
@@ -62,9 +63,11 @@ static uint16_t calculate_checksum(const uint8_t * p_ptr_data_buffer, uint32_t p
 
 static uint16_t read_magic_number(void)
 {
-    uint16_t magic_no = 0U;
-    magic_no = EEPROM.readUShort(MAGIC_NUMBER_ADRS);
-    return magic_no;
+    if (g_magic_number == 0x00U)
+    {
+        g_magic_number = EEPROM.readUShort(MAGIC_NUMBER_ADRS);
+    }
+    return g_magic_number;
 }
 
 static bool write_magic_number(void)
@@ -115,12 +118,20 @@ bool eeprom_init(uint32_t p_data_size)
     {
         ret_val = true;
     }
+    if (true == ret_val)
+    {
+        g_allocated_data_size = p_data_size;
+        read_magic_number();
+    }
     return ret_val;
 }
 
 void eeprom_deinit(void)
 {
     EEPROM.end();
+    is_eeprom_init = false;
+    g_magic_number = 0x00U;
+    g_allocated_data_size = 0U;
 }
 
 data_validity_t eeprom_read_data(uint8_t * p_ptr_data_buffer, 
@@ -129,7 +140,9 @@ data_validity_t eeprom_read_data(uint8_t * p_ptr_data_buffer,
 {
     data_validity_t data_vld = DATA_INVALID;
     uint8_t buffer_ptr[p_data_size];
-    if(NULL != p_ptr_data_buffer && 0U != p_data_size && p_starting_address >= DATA_START_ADRS)
+    if(NULL != p_ptr_data_buffer &&
+        0U != p_data_size && p_data_size <= g_allocated_data_size &&
+        p_starting_address >= DATA_START_ADRS)
     {
         logger_d(__func__, "EEPROM read data\n");
         if(true == is_magic_number_valid())
@@ -170,7 +183,9 @@ bool eeprom_write_data(uint8_t * p_ptr_data_buffer,
     bool write_status = true;
     uint16_t checksum = 0;
     uint16_t r_checksum = 0;
-    if(NULL != p_ptr_data_buffer && 0U != p_data_size && p_starting_address >= DATA_START_ADRS)
+    if(NULL != p_ptr_data_buffer && 
+        0U != p_data_size && p_data_size <= g_allocated_data_size
+        && p_starting_address >= DATA_START_ADRS)
     {
         if(false == is_magic_number_valid())
         {
