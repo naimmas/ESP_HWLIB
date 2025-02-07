@@ -4,7 +4,7 @@
  * Abstract: Implementation of "/lib/debug_logger/debug_logger.h" module.
  * Author: Naim ALMASRI
  * Date: 13.06.2024
- ***************************************************************************************************/
+  ***************************************************************************************************/
 
 /***************************************************************************************************
  * Header files.
@@ -18,17 +18,17 @@
  * Macro definitions.
  ***************************************************************************************************/
 
-#define DBG_LOG_COLOR_E "\033[0;31m[ERROR]\033[0m\t"    // ERROR    RED
-#define DBG_LOG_COLOR_W "\033[0;33m[WARN ]\033[0m\t"    // INFO     GREEN
-#define DBG_LOG_COLOR_I "\033[0;32m[INFO ]\033[0m\t"    // WARNING  YELLOW
-#define DBG_LOG_COLOR_D "\033[0;36m[DEBUG]\033[0m\t"    // DEBUG    CYAN
+#define DBG_LOG_COLOR_E "\033[0;31m[ERROR]\033[0m\t" // ERROR    RED
+#define DBG_LOG_COLOR_W "\033[0;33m[ WARN]\033[0m\t" // INFO     GREEN
+#define DBG_LOG_COLOR_I "\033[0;32m[ INFO]\033[0m\t" // WARNING  YELLOW
+#define DBG_LOG_COLOR_D "\033[0;36m[DEBUG]\033[0m\t" // DEBUG    CYAN
 #define DBG_LOG_COLOR_P "\033[0;35m[PRDIC]\033[0m\t" // PERIODIC Mageenta
 
 #define DBG_LOG_FUNC "\033[1m[FUNC: "
-#define DBG_LOG_RESET "]\033[0m ->\t"
+#define DBG_LOG_RESET "]\033[0m ->"
 
 #if BLT_DEBUG
-#define BLT_SERIAL_NAME "Civan HEM"
+#define BLT_SERIAL_NAME "BLT_DBG"
 #define BLT_SERIAL Serial_BT
 #endif
 #if UART_DEBUG
@@ -104,9 +104,9 @@ void debug_agents_init()
 {
 #ifdef DEBUG_EN 
 #if UART_DEBUG
-    UART_SERIAL.begin(115200);
+    UART_SERIAL.begin(256000);
     delay(100);
-    logger_d(__func__, "UART is ready\n");
+    logger_d("UART is ready\n");
 #endif /* UART_DEBUG */
 #if BLT_DEBUG
     BLT_SERIAL.begin(BLT_SERIAL_NAME);
@@ -119,14 +119,12 @@ delay(100);
 
 void debug_agents_set_threshold(debug_level_t p_lvl)
 {
-    g_debug_thld = p_lvl;
+    if (p_lvl != DBG_LVL_EXT)
+    {
+        g_debug_thld = p_lvl;
+    }
 }
 
-/*
- * @brief This function prints the log message with the specified log level.
- * @param p_lvl     input: Log level
- * @param p_ptr_msg input: Log message
- */
 void logger(debug_level_t p_lvl,
             const char * p_ptr_func_name, 
             const char * p_ptr_msg,
@@ -137,8 +135,17 @@ void logger(debug_level_t p_lvl,
     uint16_t bytes_written = 0U;
     uint8_t param_count = 0U;
     float current_param = 0.0;
-    float p_params_list[] = {p_param_1, p_param_2, p_param_3};
+    float const p_params_list[] = {p_param_1, p_param_2, p_param_3};
     uint16_t qualifier_idx = 0;
+    const char * log_strings[] = {
+        "",
+        DBG_LOG_COLOR_E,
+        DBG_LOG_COLOR_W,
+        DBG_LOG_COLOR_I,
+        DBG_LOG_COLOR_P,
+        DBG_LOG_COLOR_D
+    };
+
     if(p_lvl <= g_debug_thld)
     {
         memset(g_debug_msg, '\0', MAX_DBG_MSG_LEN);
@@ -152,28 +159,10 @@ void logger(debug_level_t p_lvl,
             {
                 g_debug_msg[bytes_written++] = '\n';
             }
-            switch (p_lvl)
-            {
-            case DBG_LVL_ERR:
-                memcpy(&g_debug_msg[bytes_written], DBG_LOG_COLOR_E, sizeof(DBG_LOG_COLOR_E) - 1);
-                break;
-            case DBG_LVL_INFO:
-                memcpy(&g_debug_msg[bytes_written], DBG_LOG_COLOR_I, sizeof(DBG_LOG_COLOR_I) - 1);
-                break;
-            case DBG_LVL_WARN:
-                memcpy(&g_debug_msg[bytes_written], DBG_LOG_COLOR_W, sizeof(DBG_LOG_COLOR_W) - 1);
-                break;
-            case DBG_LVL_DEBUG:
-                memcpy(&g_debug_msg[bytes_written], DBG_LOG_COLOR_D, sizeof(DBG_LOG_COLOR_D) - 1);
-                break;
-            case DBG_LVL_PERIODIC:
-                memcpy(&g_debug_msg[bytes_written], DBG_LOG_COLOR_P, sizeof(DBG_LOG_COLOR_P) - 1);
-                break;
-            default:
-                /* Should not reach here */
-                break;
-            }
-            bytes_written = sizeof(DBG_LOG_COLOR_D) - 1;
+            
+            strcpy(&g_debug_msg[bytes_written], log_strings[p_lvl]);
+            bytes_written = strlen(log_strings[p_lvl]);
+
             if(p_ptr_func_name != NULL)
             {
                 bytes_written += add_function_name(p_ptr_func_name, &g_debug_msg[bytes_written]);
@@ -183,7 +172,6 @@ void logger(debug_level_t p_lvl,
                 if (p_ptr_msg[i] == '%' && param_count < 3)
                 {
                     current_param = p_params_list[param_count++];
-
                     qualifier_idx = check_param_qualifier(&p_ptr_msg[i]);
                     if (qualifier_idx > 0)
                     {
