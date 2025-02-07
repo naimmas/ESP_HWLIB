@@ -81,10 +81,10 @@ bool web_server_init(web_server_cb_t p_get_cb)
         );
         s_async_web_server.on
         (
-            "/civan.png", HTTP_GET,
+            "/img1.png", HTTP_GET,
             [](AsyncWebServerRequest *request)
             {
-                request->send(SPIFFS, "/civan.png", "image/png");
+                request->send(SPIFFS, "/img1.png", "image/png");
             }
         );
         s_async_web_server.on
