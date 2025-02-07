@@ -104,7 +104,17 @@ typedef enum debug_level_t_enum
 * External function declarations.
 ***************************************************************************************************/
 
+/**
+ * @brief This function initializes the debug messages print interfaces.
+ * 
+ */
 void debug_agents_init();
+
+/**
+ * @brief This function sets the debug level threshold.
+ *        any message with a level less than the threshold will not be printed.
+ * @param p_lvl input: The debug level threshold.
+ */
 void debug_agents_set_threshold(debug_level_t p_lvl);
 
 /**
