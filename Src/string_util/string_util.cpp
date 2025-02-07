@@ -58,7 +58,7 @@ void string_reverse(char * p_ptr_str, uint32_t p_str_len)
     }
 }
 
-uint32_t string_itoa(int32_t p_num, char * p_ptr_str, uint32_t p_digit, uint32_t p_base)
+uint32_t string_itoa(int32_t p_num, char * p_ptr_str, uint32_t p_digit, base_t p_base)
 {
     uint32_t i = 0;
     bool is_negative = false;
@@ -72,7 +72,7 @@ uint32_t string_itoa(int32_t p_num, char * p_ptr_str, uint32_t p_digit, uint32_t
         }
         else
         {
-            if (p_num < 0 && p_base == 10)
+            if (p_num < 0 && p_base == BASE_10)
             {
                 is_negative = true;
                 p_num = -p_num;
