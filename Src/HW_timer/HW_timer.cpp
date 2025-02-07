@@ -47,7 +47,6 @@ typedef struct user_timer_t_struct
 ***************************************************************************************************/
 
 volatile static SemaphoreHandle_t s_timer_semaphore;
-static uint32_t s_timer_counter_100ms = 0U;
 static main_timer_t s_main_timer = {.timer_period = 100U,
                                     .time_unit = TIME_UNIT_MS,
                                     .timer_hnd_ptr = NULL,
@@ -63,8 +62,6 @@ static user_timer_t s_user_timers[TIMERS_COUNT];
 */
 static void timer_isr()
 {
-    s_timer_counter_100ms++;
-
     /* release the semaphore for the main loop */
     xSemaphoreGiveFromISR(s_timer_semaphore, NULL);
 }
@@ -77,7 +74,7 @@ static void timer_isr()
 * External function definitions.
 ***************************************************************************************************/
 
-void sys_timer_main()
+void ardal_timer_main()
 {
     /* Check if the semaphore is taken */
     if(xSemaphoreTake(s_timer_semaphore, 10) == pdTRUE)
@@ -113,7 +110,7 @@ void sys_timer_main()
     }
 }
 
-void sys_timer_init()
+void ardal_timer_init()
 {
     /* Check if the main timer is not initialized */
     if(s_main_timer.is_active == false)
@@ -153,7 +150,7 @@ void sys_timer_init()
     }
 }
 
-timer_handler_t * timer_allocate(uint32_t p_time_period,
+timer_handler_t * ardal_timer_allocate(uint32_t p_time_period,
                           time_unit_t p_time_unit,
                           timer_callback_t p_timer_cb,
                           bool p_one_shot)
@@ -176,7 +173,7 @@ timer_handler_t * timer_allocate(uint32_t p_time_period,
     return user_timer;
 }
 
-void timer_activate(timer_id_t p_timer_id)
+void ardal_timer_activate(timer_id_t p_timer_id)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
@@ -184,7 +181,7 @@ void timer_activate(timer_id_t p_timer_id)
     }
 }
 
-void timer_deactivate(timer_id_t p_timer_id)
+void ardal_timer_deactivate(timer_id_t p_timer_id)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
@@ -194,18 +191,17 @@ void timer_deactivate(timer_id_t p_timer_id)
     }
 }
 
-void timer_update_period(timer_id_t p_timer_id ,uint32_t p_time_period, time_unit_t p_time_unit)
+void ardal_timer_update_period(timer_id_t p_timer_id ,uint32_t p_time_period, time_unit_t p_time_unit)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
-        s_user_timers[p_timer_id].timer_counter = 0;
         s_user_timers[p_timer_id].user_timer_hnd.timer_flag = false;
         s_user_timers[p_timer_id].timer_period = p_time_period;
         s_user_timers[p_timer_id].time_unit = p_time_unit;
     }
 }
 
-void timer_update_oneshot(timer_id_t p_timer_id, bool p_one_shot)
+void ardal_timer_update_oneshot(timer_id_t p_timer_id, bool p_one_shot)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
@@ -215,7 +211,7 @@ void timer_update_oneshot(timer_id_t p_timer_id, bool p_one_shot)
     }
 }
 
-void timer_reset(timer_id_t p_timer_id)
+void ardal_timer_reset(timer_id_t p_timer_id)
 {
     if (p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
@@ -224,7 +220,7 @@ void timer_reset(timer_id_t p_timer_id)
     }
 }
 
-void timer_clear(timer_id_t p_timer_id)
+void ardal_timer_clear(timer_id_t p_timer_id)
 {
     if(p_timer_id > NO_TIMER && p_timer_id < TIMERS_COUNT)
     {
@@ -240,9 +236,9 @@ void timer_clear(timer_id_t p_timer_id)
     }
 }
 
-void hard_delay(uint16_t p_delay_time_ms)
+void ardal_hard_delay(uint16_t p_delay_time_ms)
 {
-    if (p_delay_time_ms < 1000)
+    if (p_delay_time_ms < 5000)
     {
         delay(p_delay_time_ms);
     }
