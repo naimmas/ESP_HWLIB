@@ -1,54 +1,48 @@
 /***************************************************************************************************
-* File Name: HW_comm.h
+* File Name: HW_comm.c
 * Module: HW_comm
-* Abstract: Definition of common system configs.
+* Abstract: Implementation of "lib/HW_comm/HW_comm.h" module.
 * Author: Naim ALMASRI
-* Date: 10.06.2024
+* Date: 19.01.2025
 ***************************************************************************************************/
-
-#ifndef HW_COMM_H
-#define HW_COMM_H
 
 /***************************************************************************************************
 * Header files.
 ***************************************************************************************************/
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "Arduino.h"
+#include "HW_comm.h"
 
 /***************************************************************************************************
 * Macro definitions.
 ***************************************************************************************************/
 
 /***************************************************************************************************
-* External type declarations.
+* Local type definitions.
 ***************************************************************************************************/
 
 /***************************************************************************************************
-* External data declarations.
+ * Local data definitions.
 ***************************************************************************************************/
 
 /***************************************************************************************************
-* External function declarations.
+* Local function definitions.
 ***************************************************************************************************/
 
-/**
- * @brief function takes the following frequencies as valid values:
- * 
- * @param freq_mhz 240, 160, 80    <<< For all XTAL types
- * @param freq_mhz 40, 20, 10      <<< For 40MHz XTAL
- * @param freq_mhz 26, 13          <<< For 26MHz XTAL
- * @param freq_mhz 24, 12          <<< For 24MHz XTAL
- * @retval true if succesfully
- * @retval false if error occured
- */
-bool set_sys_cpu_freq_mhz(uint32_t freq_mhz);
+/***************************************************************************************************
+* External data definitions.
+***************************************************************************************************/
 
-/**
- * @brief Get the current cpu speed in Mhz
- * 
- * @retval CPU Speed in Mhz
- */
-uint32_t get_sys_cpu_freq_mhz(void);
+/***************************************************************************************************
+* External function definitions.
+***************************************************************************************************/
 
-#endif /* HW_COMM_H */
+bool set_sys_cpu_freq_mhz(uint32_t freq_mhz)
+{
+   return setCpuFrequencyMhz(freq_mhz);
+}
+
+uint32_t get_sys_cpu_freq_mhz(void)
+{
+    return getCpuFrequencyMhz();
+}
