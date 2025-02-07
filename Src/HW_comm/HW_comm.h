@@ -35,20 +35,20 @@
 /**
  * @brief function takes the following frequencies as valid values:
  * 
- * @param freq_mhz 240, 160, 80    <<< For all XTAL types
- * @param freq_mhz 40, 20, 10      <<< For 40MHz XTAL
- * @param freq_mhz 26, 13          <<< For 26MHz XTAL
- * @param freq_mhz 24, 12          <<< For 24MHz XTAL
+ * @param freq_mhz input: 240, 160, 80    <<< For all XTAL types
+ * @param freq_mhz input: 40, 20, 10      <<< For 40MHz XTAL
+ * @param freq_mhz input: 26, 13          <<< For 26MHz XTAL
+ * @param freq_mhz input: 24, 12          <<< For 24MHz XTAL
  * @retval true if succesfully
  * @retval false if error occured
  */
-bool set_sys_cpu_freq_mhz(uint32_t freq_mhz);
+bool ardal_set_cpu_freq_mhz(uint32_t freq_mhz);
 
 /**
  * @brief Get the current cpu speed in Mhz
  * 
  * @retval CPU Speed in Mhz
  */
-uint32_t get_sys_cpu_freq_mhz(void);
+uint32_t ardal_get_cpu_freq_mhz(void);
 
 #endif /* HW_COMM_H */

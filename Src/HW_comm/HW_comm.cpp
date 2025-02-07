@@ -37,12 +37,12 @@
 * External function definitions.
 ***************************************************************************************************/
 
-bool set_sys_cpu_freq_mhz(uint32_t freq_mhz)
+bool ardal_set_cpu_freq_mhz(uint32_t freq_mhz)
 {
    return setCpuFrequencyMhz(freq_mhz);
 }
 
-uint32_t get_sys_cpu_freq_mhz(void)
+uint32_t ardal_get_cpu_freq_mhz(void)
 {
     return getCpuFrequencyMhz();
 }
