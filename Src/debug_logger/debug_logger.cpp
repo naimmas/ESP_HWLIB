@@ -181,10 +181,10 @@ void logger(debug_level_t p_lvl,
                             qualifier_idx = string_ftoa(current_param, &g_debug_msg[bytes_written], 3);
                             break;
                         case 'd':
-                            qualifier_idx = string_itoa(current_param, &g_debug_msg[bytes_written], 0, 10);
+                            qualifier_idx = string_itoa(current_param, &g_debug_msg[bytes_written], 0, BASE_10);
                             break;
                         case 'x':
-                            qualifier_idx = string_itoa(current_param, &g_debug_msg[bytes_written], 0, 16);
+                            qualifier_idx = string_itoa(current_param, &g_debug_msg[bytes_written], 0, BASE_16);
                             break;
                         }
                         bytes_written += qualifier_idx;
