@@ -1,9 +1,7 @@
 [tool.commitizen]
 version = "1.0.0"
 name = "cz_conventional_commits"
-version_files = ["Src/version.h:MAJOR_VERSION",
-                 "Src/version.h:MINOR_VERSION",
-                 "Src/version.h:PATCH_VERSION"]
+version_files = []
 version_provider = "commitizen"
 version_scheme = "semver2"
 tag_format = "$version"
