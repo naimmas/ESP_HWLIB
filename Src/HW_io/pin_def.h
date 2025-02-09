@@ -55,24 +55,20 @@
 /* ! incresing it will decrease the max allowed PWM frequency */
 #define PWM_RES ((uint8_t) 8U)
 
-#define TOTAL_IO   (sizeof(g_io_pins) / sizeof(pin_config_t))
-
 /***************************************************************************************************
 * External type declarations.
 ***************************************************************************************************/
 
-const pin_config_t g_io_pins[] = {
-    { PINI_SBC_SIG_SYS      , INPUT_PULLDOWN},
-    { PINI_SBC_SIG_ANLZ     , INPUT_PULLDOWN },
-    { PINI_SBC_CONTROL_SIG  , INPUT_PULLDOWN },
-    { PINI_LID_SWITCH       , INPUT_PULLDOWN },
-    { PINO_SBC_START_ANLZ   , OUTPUT },
-    { PINO_LED_GREEN        , OUTPUT },
-    { PINO_LED_RED          , OUTPUT },
-    { PINO_LED_BLUE         , OUTPUT },
-    { PINO_BUZZER           , OUTPUT },
-    { PINO_MOTOR_DIR_L      , OUTPUT },
-    { PINO_MOTOR_DIR_R      , OUTPUT }
+const input_pins_t g_in_pins[] = {
+    {.pin = GPIO_NUM_17 , .mode = PIN_MODE_INPUT, .int_mode = INT_MODE_RISING},
+    {.pin = GPIO_NUM_16 , .mode = PIN_MODE_INPUT, .int_mode = INT_MODE_RISING},
+    {.pin = GPIO_NUM_4 , .mode = PIN_MODE_INPUT, .int_mode = INT_MODE_RISING},
+};
+
+const output_pins_t g_out_pins[] = {
+    {.pin = PINO_LED_GREEN       , .mode = PIN_MODE_OUTPUT},
+    {.pin = PINO_LED_RED         , .mode = PIN_MODE_OUTPUT},
+    {.pin = PINO_LED_BLUE        , .mode = PIN_MODE_OUTPUT},
 };
 
 #endif /* PIN_DEF_H */

@@ -43,11 +43,45 @@ typedef enum led_color_enum
     LED_OFF,
 } led_color_t;
 
-typedef struct pin_config_t_struct
+typedef enum out_pin_mode_t_enum
+{
+    PIN_MODE_OUTPUT = OUTPUT,
+    PIN_MODE_OUTPUT_OPEN_DRAIN = OUTPUT_OPEN_DRAIN,
+    PIN_MODE_ANALOG_IN = ANALOG,
+}out_pin_mode_t;
+
+typedef enum in_pin_mode_t_enum
+{
+    PIN_MODE_INPUT = INPUT,
+    PIN_MODE_INPUT_PULLUP = INPUT_PULLUP,
+    PIN_MODE_INPUT_PULLDOWN = INPUT_PULLDOWN,
+    PIN_MODE_INPUT_OPEN_DRAIN = OPEN_DRAIN,
+    PIN_MODE_ANALOG_OUT = ANALOG,
+}in_pin_mode_t;
+
+typedef enum interrupt_mode_t_enum
+{
+    INT_MODE_DISABLED,
+    INT_MODE_RISING,
+    INT_MODE_FALLING,
+    INT_MODE_CHANGE,
+    INT_MODE_AT_LOW,
+    INT_MODE_AT_HIGH,
+}interrupt_mode_t;
+
+typedef struct input_pins_t_struct
 {
     gpio_num_t pin;
-    uint8_t mode;
-} pin_config_t;
+    in_pin_mode_t mode;
+    interrupt_mode_t int_mode;
+    bool debounce_en;
+} input_pins_t;
+
+typedef struct output_pins_t_struct
+{
+    gpio_num_t pin;
+    out_pin_mode_t mode;
+} output_pins_t;
 
 /***************************************************************************************************
 * External data declarations.
@@ -57,12 +91,9 @@ typedef struct pin_config_t_struct
 * External function declarations.
 ***************************************************************************************************/
 
-void init_io(void);
-signal_state_t get_sbc_ctrl_state(void);
-signal_state_t get_sbc_sys_state(void);
-signal_state_t get_lid_state(bool p_force_update);
+void init_input_pins(input_pins_t const *p_ptr_in_pins, uint8_t pin_count);
+void init_output_pins(output_pins_t const *p_ptr_out_pins, uint8_t pin_count);
+signal_state_t get_input_state(gpio_num_t input_pin, bool p_force_update);
 void set_led(led_color_t p_color);
-void set_buzzer(signal_state_t p_state);
-void pwm_set_duty_cycle(uint8_t p_duty_cycle_percent);
 
 #endif /* HW_IO_H */

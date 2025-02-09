@@ -35,44 +35,43 @@
 * Local type definitions.
 ***************************************************************************************************/
 
-/* Lid switch signal state holder */
-static uint8_t s_lid_switch_sig = 0;
-/* SBC analysis control signal state holder */
-static uint8_t s_sbc_ctrl_sig = 0;
+typedef struct input_pins_hndlr_t_struct
+{
+  volatile uint32_t last_time;
+  volatile signal_state_t signal;
+  bool debounce;
+} input_pins_hndlr_t;
 
 /***************************************************************************************************
  * Local data definitions.
 ***************************************************************************************************/
 
+volatile input_pins_hndlr_t g_input_pins_hndlrs[GPIO_NUM_MAX];
+
 /***************************************************************************************************
 * Local function definitions.
 ***************************************************************************************************/
 
-/*
- * @brief Interrupt service routine for the lid switch.
- * @brief This function is called when the lid switch state changes.
-*/
-static IRAM_ATTR void isr_lid_switch(void)
+static IRAM_ATTR void isr_gpio_cb(void *arg)
 {
-  static uint32_t s_lid_switch_time_prev = 0;
-  uint32_t lid_switch_time = millis();
-  
-  if (lid_switch_time - s_lid_switch_time_prev > DEBOUNCE_TIME_MS)
+  volatile input_pins_hndlr_t * pin_hndlr_ptr = &g_input_pins_hndlrs[(uint32_t)arg];
+  uint8_t state = digitalRead((uint32_t)arg);
+  pin_hndlr_ptr->signal = SIGNAL_INVALID;
+  uint32_t current_time = (uint32_t)millis();
+  if (false == pin_hndlr_ptr->debounce ||
+      (pin_hndlr_ptr->last_time >= current_time ||
+      current_time - pin_hndlr_ptr->last_time >= DEBOUNCE_TIME_MS))
   {
-    s_lid_switch_sig = digitalRead(PINI_LID_SWITCH);
-    SET_SIGNAL_VALID(s_lid_switch_sig);
-    s_lid_switch_time_prev = lid_switch_time;
+    if (state == HIGH)
+    {
+      pin_hndlr_ptr->signal = SIGNAL_HIGH;
+    }
+    else
+    {
+      pin_hndlr_ptr->signal = SIGNAL_LOW;
+    }
+    pin_hndlr_ptr->last_time = millis();
   }
-}
-
-/*
- * @brief Interrupt service routine for the SBC analysis control signal.
- * @brief This function is called when the SBC control signal state changes to HIGH.
-*/
-static IRAM_ATTR void isr_sbc_sig_cntrl(void)
-{
-  s_sbc_ctrl_sig = digitalRead(PINI_SBC_CONTROL_SIG);
-  SET_SIGNAL_VALID(s_sbc_ctrl_sig);
 }
 
 /***************************************************************************************************
@@ -83,129 +82,101 @@ static IRAM_ATTR void isr_sbc_sig_cntrl(void)
 * External function definitions.
 ***************************************************************************************************/
 
+void init_input_pins(input_pins_t const *p_ptr_in_pins, uint8_t pin_count)
+{
+  logger_d("Initializing Input pins\n");
+  
+  // zero-initialize the config structure.
+  gpio_config_t io_conf = {};
+  for (uint8_t i = 0; i < pin_count; i++)
+  {
+    switch (p_ptr_in_pins[i].int_mode)
+    {
+    case INT_MODE_DISABLED:
+      io_conf.intr_type = GPIO_INTR_DISABLE;
+      break;
+    case INT_MODE_RISING:
+      io_conf.intr_type = GPIO_INTR_POSEDGE;
+      break;
+    case INT_MODE_FALLING:
+      io_conf.intr_type = GPIO_INTR_NEGEDGE;
+      break;
+    case INT_MODE_CHANGE:
+      io_conf.intr_type = GPIO_INTR_ANYEDGE;
+      break;
+    case INT_MODE_AT_LOW:
+      io_conf.intr_type = GPIO_INTR_LOW_LEVEL;
+      break;
+    case INT_MODE_AT_HIGH:
+      io_conf.intr_type = GPIO_INTR_HIGH_LEVEL;
+      break;
+    default:
+      break;
+    }
+    io_conf.mode = GPIO_MODE_INPUT;
+    // bit mask of the pins that you want to set,e.g.GPIO18/19
+    io_conf.pin_bit_mask = digitalPinToBitMask(p_ptr_in_pins[i].pin);
+
+    switch (p_ptr_in_pins[i].mode)
+{
+    case PIN_MODE_INPUT_PULLUP:
+      // disable pull-down mode
+      io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
+      // enable pull-up mode
+      io_conf.pull_up_en = GPIO_PULLUP_ENABLE;
+      break;
+    case PIN_MODE_INPUT_PULLDOWN:
+      // enable pull-down mode
+      io_conf.pull_down_en = GPIO_PULLDOWN_ENABLE;
+      // disable pull-up mode
+      io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
+      break;
+    case PIN_MODE_INPUT:
+    default:
+      break;
+}
+    // configure GPIO with the given settings
+    gpio_config(&io_conf);
+    g_input_pins_hndlrs[p_ptr_in_pins[i].pin].signal = SIGNAL_INVALID;
+    g_input_pins_hndlrs[p_ptr_in_pins[i].pin].last_time = 0U;
+  }
+  // install gpio isr service
+  gpio_install_isr_service(ESP_INTR_FLAG_IRAM);
+  for (uint8_t i = 0; i < pin_count; i++)
+  {
+    gpio_isr_handler_add(p_ptr_in_pins[i].pin, isr_gpio_cb, (void *)p_ptr_in_pins[i].pin);
+  }
+  logger_d("Input pins are initialized\n");
+}
+
 /*
  * @brief Initialize IO pins
-*/
-void init_io(void)
+ */
+void init_output_pins(output_pins_t const *p_ptr_out_pins, uint8_t p_pin_count)
 {
-  logger_d(__func__, "Initializing IO pins\n");
-  
-  for (uint8_t i = 0; i < TOTAL_IO; i++)
-  {
-    pinMode(g_io_pins[i].pin, g_io_pins[i].mode);
-  }
+  logger_d("Initializing Output pins\n");
 
-  ledcSetup(PWM_CHN, PWM_FRQ, PWM_RES);
-  ledcAttachPin(PINP_MOTOR, PWM_CHN);
-  attachInterrupt(digitalPinToInterrupt(PINI_LID_SWITCH), isr_lid_switch, CHANGE);
-  attachInterrupt(digitalPinToInterrupt(PINI_SBC_CONTROL_SIG), isr_sbc_sig_cntrl, RISING);
-  logger_d(NULL, "IO pins are initialized\n");
+  for (uint8_t i = 0; i < p_pin_count; i++)
+  {
+    pinMode(p_ptr_out_pins[i].pin, p_ptr_out_pins[i].mode);
+  }
+  logger_d("Output pins are initialized\n");
 }
 
-/*
-  * @brief This function returns the state of the SBC analyze control signal
-  * @return SIGNAL_LOW if the SBC analysis is not ready, 
-  *         SIGNAL_HIGH if the SBC analysis is ready,
-  *         SIGNAL_INVALID no change in the SBC control signal
-*/
-signal_state_t get_sbc_ctrl_state(void)
+signal_state_t get_input_state(gpio_num_t input_pin, bool p_force_update)
 {
-  signal_state_t sbc_ctrl_state = SIGNAL_INVALID;
-
-  if (IS_SIGNAL_VALID(s_sbc_ctrl_sig))
-  {
-    sbc_ctrl_state = (signal_state_t)GET_SIGNAL(s_sbc_ctrl_sig);
-    SET_SIGNAL_INVALID(s_sbc_ctrl_sig);
-  }
-
-  return sbc_ctrl_state;
-}
-
-/*
-  * @brief This function returns the state of the SBC system signal
-  * @return SIGNAL_LOW if the SBC system is not ready or down, 
-  *         SIGNAL_HIGH if the SBC system is ready,
-  *         SIGNAL_INVALID no change in the SBC system signal
-*/
-signal_state_t get_sbc_sys_state(void)
-{
-  signal_state_t sbc_sys_state = SIGNAL_INVALID;
-
-  if (digitalRead(PINI_SBC_SIG_SYS) == HIGH)
-  {
-    sbc_sys_state = SIGNAL_HIGH;
-  }
-  else
-  {
-    sbc_sys_state = SIGNAL_LOW;
-  }
-
-  return sbc_sys_state;
-}
-
-/*
-  * @brief This function returns the state of the lid switch
-  * @param p_force_update input: true to force update the lid state (+debounce),
-  *                              false to return the value from the last ISR update
-  * @return SIGNAL_LOW if the lid is close, 
-  *         SIGNAL_HIGH if the lid is open,
-  *         SIGNAL_INVALID no change in the lid state
-*/
-signal_state_t get_lid_state(bool p_force_update)
-{
-  signal_state_t lid_state = SIGNAL_INVALID;
-  uint32_t sw_time = millis();
+  signal_state_t ret_val = SIGNAL_INVALID;
 
   if (p_force_update == true)
   {
-    lid_state = (signal_state_t)digitalRead(PINI_LID_SWITCH);
-    while (millis() - sw_time < DEBOUNCE_TIME_MS)
-    {
-      ;
-    }
-
-    if (digitalRead(PINI_LID_SWITCH) != lid_state)
-    {
-      lid_state = SIGNAL_INVALID;
-      SET_SIGNAL_INVALID(s_lid_switch_sig);
-    }
-    
+    ret_val = (signal_state_t)digitalRead(PINI_LID_SWITCH);
   }
-  else
+  else if (SIGNAL_INVALID != g_input_pins_hndlrs[input_pin].signal)
   {
-    if (IS_SIGNAL_VALID(s_lid_switch_sig))
-    {
-      lid_state = (signal_state_t)GET_SIGNAL(s_lid_switch_sig);
-      SET_SIGNAL_INVALID(s_lid_switch_sig);
-    }
+    ret_val = g_input_pins_hndlrs[input_pin].signal;
+    g_input_pins_hndlrs[input_pin].signal = SIGNAL_INVALID;
   }
-
-  return lid_state;
-}
-
-/*
-  * @brief This function sets the duty cycle of the PWM signal
-  * @param p_duty_cycle_percent input: The duty cycle percentage
-*/
-void pwm_set_duty_cycle(uint8_t p_duty_cycle_percent)
-{
-/* Convert speed from percentage to duty cycle */
-#define SPD_TO_DUTY(spd) (uint32_t)((uint32_t)spd * ((1U << PWM_RES) - 1U) / 100U)
-
-  if(p_duty_cycle_percent > 100)
-  {
-    p_duty_cycle_percent = 100;
-  }
-  
-  ledcWrite(PWM_CHN, SPD_TO_DUTY(p_duty_cycle_percent));
-}
-
-void set_buzzer(signal_state_t p_state)
-{
-  if (p_state != SIGNAL_INVALID)
-  {
-    digitalWrite(PINO_BUZZER, p_state);
-  }
+  return ret_val;
 }
 
 void set_led(led_color_t p_color)
