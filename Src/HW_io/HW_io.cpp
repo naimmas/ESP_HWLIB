@@ -1,14 +1,14 @@
 /***************************************************************************************************
-* File Name: HW_io.c
-* Module: HW_io
-* Abstract: Implementation of "/lib/HW_io/HW_io.h" module.
-* Author: Naim ALMASRI
-* Date: 10.06.2024
-***************************************************************************************************/
+ * File Name: HW_io.c
+ * Module: HW_io
+ * Abstract: Implementation of "/lib/HW_io/HW_io.h" module.
+ * Author: Naim ALMASRI
+ * Date: 10.06.2024
+ ***************************************************************************************************/
 
 /***************************************************************************************************
-* Header files.
-***************************************************************************************************/
+ * Header files.
+ ***************************************************************************************************/
 
 #include "Arduino.h"
 #include "HW_io.h"
@@ -17,23 +17,15 @@
 #include "pin_def.h"
 
 /***************************************************************************************************
-* Macro definitions.
-***************************************************************************************************/
+ * Macro definitions.
+ ***************************************************************************************************/
 
-/* Setting the signal to valid */
-#define SET_SIGNAL_VALID(signal) (signal |= 0xF0)
-/* Setting the signal to invalid */
-#define SET_SIGNAL_INVALID(signal) (signal &= 0x0F)
-/* Checking if the signal is valid */
-#define IS_SIGNAL_VALID(signal) (signal & 0xF0)
-/* Getting the signal value */
-#define GET_SIGNAL(signal) (signal & 0x0F)
 /* Debounce time for mechanical switches */
-#define DEBOUNCE_TIME_MS (100U)
+#define DEBOUNCE_TIME_MS (200U)
 
 /***************************************************************************************************
-* Local type definitions.
-***************************************************************************************************/
+ * Local type definitions.
+ ***************************************************************************************************/
 
 typedef struct input_pins_hndlr_t_struct
 {
@@ -44,13 +36,13 @@ typedef struct input_pins_hndlr_t_struct
 
 /***************************************************************************************************
  * Local data definitions.
-***************************************************************************************************/
+ ***************************************************************************************************/
 
 volatile input_pins_hndlr_t g_input_pins_hndlrs[GPIO_NUM_MAX];
 
 /***************************************************************************************************
-* Local function definitions.
-***************************************************************************************************/
+ * Local function definitions.
+ ***************************************************************************************************/
 
 static IRAM_ATTR void isr_gpio_cb(void *arg)
 {
@@ -75,17 +67,17 @@ static IRAM_ATTR void isr_gpio_cb(void *arg)
 }
 
 /***************************************************************************************************
-* External data definitions.
-***************************************************************************************************/
+ * External data definitions.
+ ***************************************************************************************************/
 
 /***************************************************************************************************
-* External function definitions.
-***************************************************************************************************/
+ * External function definitions.
+ ***************************************************************************************************/
 
 void init_input_pins(input_pins_t const *p_ptr_in_pins, uint8_t pin_count)
 {
   logger_d("Initializing Input pins\n");
-  
+
   // zero-initialize the config structure.
   gpio_config_t io_conf = {};
   for (uint8_t i = 0; i < pin_count; i++)
@@ -118,7 +110,7 @@ void init_input_pins(input_pins_t const *p_ptr_in_pins, uint8_t pin_count)
     io_conf.pin_bit_mask = digitalPinToBitMask(p_ptr_in_pins[i].pin);
 
     switch (p_ptr_in_pins[i].mode)
-{
+    {
     case PIN_MODE_INPUT_PULLUP:
       // disable pull-down mode
       io_conf.pull_down_en = GPIO_PULLDOWN_DISABLE;
@@ -134,7 +126,7 @@ void init_input_pins(input_pins_t const *p_ptr_in_pins, uint8_t pin_count)
     case PIN_MODE_INPUT:
     default:
       break;
-}
+    }
     // configure GPIO with the given settings
     gpio_config(&io_conf);
     g_input_pins_hndlrs[p_ptr_in_pins[i].pin].signal = SIGNAL_INVALID;

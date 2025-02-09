@@ -24,14 +24,14 @@
 * External type declarations.
 ***************************************************************************************************/
 
-typedef enum signal_state_enum
+typedef enum signal_state_t_enum
 {
     SIGNAL_LOW = 0x00U,
     SIGNAL_HIGH = 0x01U,
     SIGNAL_INVALID = 0x0FU,
 } signal_state_t;
 
-typedef enum led_color_enum
+typedef enum led_color_t_enum
 {
     LED_RED = 0,
     LED_GREEN,
